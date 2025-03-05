@@ -1,38 +1,77 @@
 <script setup lang="ts">
-import TopPage from './components/Top.vue'
+import TrainingTabs from '@/components/TrainingTabs.vue'
 </script>
 
 <template>
-  <main>
-    <TopPage />
-  </main>
+  <div class="app-container">
+    <header>
+      <h1>トレーニング記録</h1>
+    </header>
+    <main>
+      <TrainingTabs />
+    </main>
+    <footer>
+      <p>© 2023 トレーニング記録アプリ</p>
+    </footer>
+  </div>
 </template>
 
-<style scoped>
+<style>
+/* グローバルスタイル */
+:root {
+  --primary-color: #4caf50;
+  --secondary-color: #2196f3;
+  --background-color: #f5f5f5;
+  --text-color: #333;
+  --border-color: #ddd;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
 header {
-  line-height: 1.5;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+main {
+  flex: 1;
+  padding: 1rem;
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
+footer {
+  background-color: #f1f1f1;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #666;
+}
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
+@media (min-width: 768px) {
+  .app-container {
+    max-width: 768px;
+    margin: 0 auto;
   }
 }
 </style>
