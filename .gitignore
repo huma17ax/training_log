@@ -28,3 +28,16 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+docs/ai/
+
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+ui-debug.log
+
+# Environment variables
+.env
+.env.*
+!.env.example
