@@ -25,14 +25,16 @@ const setActiveTab = (tab: TrainingType) => {
 <template>
   <div class="training-tabs">
     <div class="tabs-header">
-      <button
-        v-for="tab in tabs"
-        :key="tab.id"
-        :class="['tab-button', { active: activeTab === tab.id }]"
-        @click="setActiveTab(tab.id as TrainingType)"
-      >
-        {{ tab.label }}
-      </button>
+      <div class="tab-buttons">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          :class="['tab-button', { active: activeTab === tab.id }]"
+          @click="setActiveTab(tab.id as TrainingType)"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
     </div>
 
     <div class="tab-content">
@@ -51,16 +53,28 @@ const setActiveTab = (tab: TrainingType) => {
   flex-direction: column;
   width: 100%;
   background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
 .tabs-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--primary-color);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tab-buttons {
   display: flex;
   overflow-x: auto;
-  background-color: #f8f8f8;
-  border-bottom: 1px solid var(--border-color);
+  background-color: rgba(255, 255, 255, 0.1);
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.tab-buttons::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .tab-button {
@@ -70,29 +84,26 @@ const setActiveTab = (tab: TrainingType) => {
   cursor: pointer;
   white-space: nowrap;
   font-size: 0.9rem;
-  color: #666;
+  color: rgba(255, 255, 255, 0.8);
   transition: all 0.3s ease;
 }
 
 .tab-button:hover {
-  background-color: #eee;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .tab-button.active {
-  color: var(--primary-color);
-  border-bottom: 2px solid var(--primary-color);
+  color: white;
+  background-color: rgba(255, 255, 255, 0.2);
   font-weight: bold;
 }
 
 .tab-content {
   padding: 1rem;
+  flex: 1;
 }
 
 @media (max-width: 600px) {
-  .tabs-header {
-    justify-content: flex-start;
-  }
-
   .tab-button {
     padding: 0.6rem 0.8rem;
     font-size: 0.8rem;
