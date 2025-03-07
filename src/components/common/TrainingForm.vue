@@ -10,6 +10,7 @@ const emit = defineEmits<{
   (e: 'submit', data: Record<string, number | string>): void
 }>()
 
+const isFormVisible = ref(false)
 const today = new Date().toISOString().split('T')[0]
 const formData = ref({
   date: today,
@@ -48,85 +49,118 @@ const submitForm = () => {
     reps: 10,
     sets: 3,
   }
+
+  // フォームを非表示にする
+  isFormVisible.value = false
+}
+
+const toggleForm = () => {
+  isFormVisible.value = !isFormVisible.value
 }
 </script>
 
 <template>
-  <div class="training-form">
-    <h3>新しい記録を追加</h3>
-    <form @submit.prevent="submitForm">
-      <div class="form-group">
-        <label for="date">日付</label>
-        <input id="date" v-model="formData.date" type="date" required />
-      </div>
+  <div class="training-form-container">
+    <button class="toggle-button" @click="toggleForm">
+      {{ isFormVisible ? '記録を閉じる' : '記録を追加' }}
+    </button>
 
-      <template v-if="type === 'running'">
+    <div v-if="isFormVisible" class="training-form">
+      <h3>新しい記録を追加</h3>
+      <form @submit.prevent="submitForm">
         <div class="form-group">
-          <label for="level">レベル</label>
-          <input
-            id="level"
-            v-model.number="formData.level"
-            type="number"
-            min="1"
-            max="20"
-            required
-          />
+          <label for="date">日付</label>
+          <input id="date" v-model="formData.date" type="date" required />
         </div>
 
-        <div class="form-group">
-          <label for="time">時間 (分)</label>
-          <input id="time" v-model.number="formData.time" type="number" min="1" required />
-        </div>
+        <template v-if="type === 'running'">
+          <div class="form-group">
+            <label for="level">レベル</label>
+            <input
+              id="level"
+              v-model.number="formData.level"
+              type="number"
+              min="1"
+              max="20"
+              required
+            />
+          </div>
 
-        <div class="form-group">
-          <label for="speed">速度 (km/h)</label>
-          <input
-            id="speed"
-            v-model.number="formData.speed"
-            type="number"
-            step="0.1"
-            min="0.1"
-            required
-          />
-        </div>
-      </template>
+          <div class="form-group">
+            <label for="time">時間 (分)</label>
+            <input id="time" v-model.number="formData.time" type="number" min="1" required />
+          </div>
 
-      <template v-else>
-        <div class="form-group">
-          <label for="weight">重量 (kg)</label>
-          <input
-            id="weight"
-            v-model.number="formData.weight"
-            type="number"
-            min="0"
-            step="0.5"
-            required
-          />
-        </div>
+          <div class="form-group">
+            <label for="speed">速度 (km/h)</label>
+            <input
+              id="speed"
+              v-model.number="formData.speed"
+              type="number"
+              step="0.1"
+              min="0.1"
+              required
+            />
+          </div>
+        </template>
 
-        <div class="form-group">
-          <label for="reps">回数</label>
-          <input id="reps" v-model.number="formData.reps" type="number" min="1" required />
-        </div>
+        <template v-else>
+          <div class="form-group">
+            <label for="weight">重量 (kg)</label>
+            <input
+              id="weight"
+              v-model.number="formData.weight"
+              type="number"
+              min="0"
+              step="0.5"
+              required
+            />
+          </div>
 
-        <div class="form-group">
-          <label for="sets">セット数</label>
-          <input id="sets" v-model.number="formData.sets" type="number" min="1" required />
-        </div>
-      </template>
+          <div class="form-group">
+            <label for="reps">回数</label>
+            <input id="reps" v-model.number="formData.reps" type="number" min="1" required />
+          </div>
 
-      <button type="submit" class="submit-button">記録を追加</button>
-    </form>
+          <div class="form-group">
+            <label for="sets">セット数</label>
+            <input id="sets" v-model.number="formData.sets" type="number" min="1" required />
+          </div>
+        </template>
+
+        <button type="submit" class="submit-button">記録を追加</button>
+      </form>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.training-form-container {
+  margin-bottom: 2rem;
+}
+
+.toggle-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.toggle-button:hover {
+  background-color: #43a047;
+}
+
 .training-form {
   background-color: white;
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 2rem;
 }
 
 h3 {
