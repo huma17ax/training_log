@@ -136,7 +136,7 @@ const toggleForm = () => {
 
 <style scoped>
 .training-form-container {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .toggle-button {
@@ -150,6 +150,7 @@ const toggleForm = () => {
   transition: background-color 0.3s;
   width: 100%;
   margin-bottom: 1rem;
+  min-height: 44px; /* タップターゲットサイズの確保 */
 }
 
 .toggle-button:hover {
@@ -158,7 +159,7 @@ const toggleForm = () => {
 
 .training-form {
   background-color: white;
-  padding: 1.5rem;
+  padding: 1.25rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -166,6 +167,7 @@ const toggleForm = () => {
 h3 {
   margin-bottom: 1rem;
   color: var(--text-color);
+  font-size: 1.1rem;
 }
 
 .form-group {
@@ -177,6 +179,7 @@ label {
   margin-bottom: 0.5rem;
   font-weight: 500;
   color: #555;
+  font-size: 0.9rem;
 }
 
 input {
@@ -185,6 +188,18 @@ input {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 1rem;
+  min-height: 44px; /* タップターゲットサイズの確保 */
+  -webkit-appearance: none; /* iOSのデフォルトスタイルを削除 */
+}
+
+input[type='number'] {
+  -moz-appearance: textfield; /* Firefoxのスピンボタンを非表示 */
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 input:focus {
@@ -204,9 +219,55 @@ input:focus {
   transition: background-color 0.3s;
   width: 100%;
   margin-top: 1rem;
+  min-height: 44px; /* タップターゲットサイズの確保 */
 }
 
 .submit-button:hover {
   background-color: #43a047;
+}
+
+@media (max-width: 375px) {
+  .training-form-container {
+    margin-bottom: 0.75rem;
+  }
+
+  .training-form {
+    padding: 0.75rem;
+  }
+
+  h3 {
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .form-group {
+    margin-bottom: 0.75rem;
+  }
+
+  label {
+    font-size: 0.8rem;
+    margin-bottom: 0.3rem;
+  }
+
+  input {
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    min-height: 44px;
+  }
+
+  .toggle-button,
+  .submit-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    min-height: 44px;
+  }
+
+  .toggle-button {
+    margin-bottom: 0.75rem;
+  }
+
+  .submit-button {
+    margin-top: 0.75rem;
+  }
 }
 </style>
