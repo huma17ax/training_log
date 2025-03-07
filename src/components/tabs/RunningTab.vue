@@ -61,12 +61,24 @@ const addRecord = (data: Record<string, number | string>) => {
 
 <style scoped>
 .running-tab {
-  padding: 1rem 0;
+  padding: 0.75rem 0;
 }
 
 h2 {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
   color: var(--text-color);
   text-align: center;
+  font-size: 1.25rem;
+}
+
+@media (max-width: 375px) {
+  .running-tab {
+    padding: 0.5rem 0;
+  }
+
+  h2 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+  }
 }
 </style>

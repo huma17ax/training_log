@@ -69,16 +69,20 @@ const setActiveTab = (tab: TrainingType) => {
   display: flex;
   overflow-x: auto;
   background-color: rgba(255, 255, 255, 0.1);
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  padding: 0.25rem;
+  gap: 0.25rem;
 }
 
 .tab-buttons::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
 }
 
 .tab-button {
-  padding: 0.8rem 1rem;
+  padding: 0.75rem 1rem;
   background: none;
   border: none;
   cursor: pointer;
@@ -86,6 +90,27 @@ const setActiveTab = (tab: TrainingType) => {
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.8);
   transition: all 0.3s ease;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: center;
+  position: relative;
+  flex: 0 0 auto;
+  border-radius: 4px;
+}
+
+.tab-button::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: white;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+  transform-origin: center;
 }
 
 .tab-button:hover {
@@ -98,15 +123,45 @@ const setActiveTab = (tab: TrainingType) => {
   font-weight: bold;
 }
 
+.tab-button.active::after {
+  transform: scaleX(0.8);
+}
+
+.tabs-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 24px;
+  background: linear-gradient(to left, var(--primary-color) 0%, transparent 100%);
+  pointer-events: none;
+  opacity: 0.8;
+}
+
 .tab-content {
-  padding: 1rem;
+  padding: 0.75rem;
   flex: 1;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 375px) {
+  .tab-buttons {
+    padding: 0.2rem;
+    gap: 0.2rem;
+  }
+
   .tab-button {
-    padding: 0.6rem 0.8rem;
-    font-size: 0.8rem;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+    min-height: 40px;
+  }
+
+  .tab-content {
+    padding: 0.5rem 0.25rem;
+  }
+
+  .tabs-header::after {
+    width: 16px;
   }
 }
 </style>

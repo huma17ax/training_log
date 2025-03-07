@@ -121,22 +121,23 @@ const durationDays = computed(() => {
 <style scoped>
 .training-stats {
   background-color: white;
-  padding: 1.5rem;
+  padding: 1.25rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 h3 {
   margin-bottom: 1rem;
   color: var(--text-color);
+  font-size: 1.1rem;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
 }
 
 .stat-item {
@@ -144,18 +145,24 @@ h3 {
   padding: 1rem;
   border-radius: 4px;
   text-align: center;
+  min-height: 44px; /* タップターゲットサイズの確保 */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .stat-value {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: bold;
   color: var(--primary-color);
   margin-bottom: 0.25rem;
+  line-height: 1.2;
 }
 
 .stat-label {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #666;
+  line-height: 1.2;
 }
 
 .latest-record {
@@ -167,17 +174,74 @@ h3 {
 h4 {
   margin-bottom: 0.5rem;
   color: var(--text-color);
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 p {
   margin: 0.25rem 0;
   color: #555;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 @media (min-width: 768px) {
   .stats-grid {
     grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .training-stats {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  h3 {
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .stats-grid {
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .stat-item {
+    padding: 0.75rem 0.5rem;
+    min-height: 44px;
+  }
+
+  .stat-value {
+    font-size: 1.1rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
+
+  .latest-record {
+    padding: 0.75rem;
+  }
+
+  h4 {
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
+  }
+
+  p {
+    font-size: 0.8rem;
+    margin: 0.2rem 0;
   }
 }
 </style>
