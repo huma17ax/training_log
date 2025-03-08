@@ -1,77 +1,181 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useTrainingStore } from '../trainingStore'
+import type { DocumentSnapshot, QuerySnapshot, Unsubscribe } from 'firebase/firestore'
+import { addDoc, doc, deleteDoc, onSnapshot } from 'firebase/firestore'
+
+// Firestoreのモック
+vi.mock('firebase/firestore', () => ({
+  collection: vi.fn(() => 'collection-ref'),
+  addDoc: vi.fn(),
+  doc: vi.fn(() => 'doc-ref'),
+  deleteDoc: vi.fn(),
+  onSnapshot: vi.fn().mockImplementation((_, callback) => {
+    callback({
+      docs: [
+        {
+          id: '1',
+          data: () => ({
+            type: 'running',
+            date: { toDate: () => new Date('2024-03-15') },
+            level: 5,
+            time: 30,
+            speed: 8.5,
+            userId: 'test-user-id',
+          }),
+        },
+        {
+          id: '2',
+          data: () => ({
+            type: 'legPress',
+            date: { toDate: () => new Date('2024-03-15') },
+            weight: 80,
+            reps: 12,
+            sets: 3,
+            userId: 'test-user-id',
+          }),
+        },
+      ],
+    })
+    return (() => {}) as Unsubscribe
+  }),
+  Timestamp: {
+    fromDate: vi.fn((date) => ({ toDate: () => new Date(date) })),
+  },
+  getFirestore: vi.fn(() => 'firestore-instance'),
+}))
+
+// Firebase Authのモック
+vi.mock('firebase/auth', () => ({
+  getAuth: vi.fn(() => ({
+    currentUser: { uid: 'test-user-id' },
+    onAuthStateChanged: vi.fn((callback) => {
+      callback({ uid: 'test-user-id' })
+      return () => {}
+    }),
+  })),
+}))
 
 describe('Training Store', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
+    vi.clearAllMocks()
   })
 
-  it('初期状態で各トレーニング記録が存在する', () => {
+  it('初期状態でFirestoreからデータを読み込む', () => {
     const store = useTrainingStore()
-    expect(store.runningRecords).toHaveLength(3)
-    expect(store.legPressRecords).toHaveLength(3)
-    expect(store.chestPressRecords).toHaveLength(3)
-    expect(store.latPulldownRecords).toHaveLength(3)
-    expect(store.abdominalRecords).toHaveLength(3)
+    expect(store.runningRecords).toHaveLength(1)
+    expect(store.legPressRecords).toHaveLength(1)
+    expect(store.chestPressRecords).toHaveLength(0)
+    expect(store.latPulldownRecords).toHaveLength(0)
+    expect(store.abdominalRecords).toHaveLength(0)
   })
 
-  it('新しいランニング記録を追加できる', () => {
+  it('should add running record to Firestore', async () => {
     const store = useTrainingStore()
-    const newRecord = {
-      date: '2024-03-06',
-      level: 7,
-      time: 45,
-      speed: 9.5,
+    const record = {
+      date: '2024-03-15',
+      level: 5,
+      time: 30,
+      speed: 8.5,
     }
 
-    store.addRunningRecord(newRecord)
+    await store.addRunningRecord(record)
 
-    expect(store.runningRecords).toHaveLength(4)
-    const addedRecord = store.runningRecords[3]
-    expect(addedRecord.date).toBe(newRecord.date)
-    expect(addedRecord.level).toBe(newRecord.level)
-    expect(addedRecord.time).toBe(newRecord.time)
-    expect(addedRecord.speed).toBe(newRecord.speed)
-    expect(addedRecord.id).toBeDefined()
+    expect(vi.mocked(addDoc)).toHaveBeenCalledWith(
+      'collection-ref',
+      expect.objectContaining({
+        ...record,
+        type: 'running',
+        userId: 'test-user-id',
+        date: expect.any(Object),
+      }),
+    )
   })
 
-  it('新しいウェイトトレーニング記録を追加できる', () => {
+  it('should add weight training record to Firestore', async () => {
     const store = useTrainingStore()
-    const newRecord = {
-      date: '2024-03-06',
-      weight: 95,
-      reps: 8,
-      sets: 4,
-    }
-
-    store.addWeightTrainingRecord('legPress', newRecord)
-
-    expect(store.legPressRecords).toHaveLength(4)
-    const addedRecord = store.legPressRecords[3]
-    expect(addedRecord.date).toBe(newRecord.date)
-    expect(addedRecord.weight).toBe(newRecord.weight)
-    expect(addedRecord.reps).toBe(newRecord.reps)
-    expect(addedRecord.sets).toBe(newRecord.sets)
-    expect(addedRecord.id).toBeDefined()
-  })
-
-  it('各種ウェイトトレーニングに記録を追加できる', () => {
-    const store = useTrainingStore()
-    const newRecord = {
-      date: '2024-03-06',
-      weight: 75,
-      reps: 10,
+    const record = {
+      date: '2024-03-15',
+      weight: 80,
+      reps: 12,
       sets: 3,
     }
 
-    store.addWeightTrainingRecord('chestPress', newRecord)
-    expect(store.chestPressRecords).toHaveLength(4)
+    await store.addWeightTrainingRecord('legPress', record)
 
-    store.addWeightTrainingRecord('latPulldown', newRecord)
-    expect(store.latPulldownRecords).toHaveLength(4)
+    expect(vi.mocked(addDoc)).toHaveBeenCalledWith(
+      'collection-ref',
+      expect.objectContaining({
+        ...record,
+        type: 'legPress',
+        userId: 'test-user-id',
+        date: expect.any(Object),
+      }),
+    )
+  })
 
-    store.addWeightTrainingRecord('abdominal', newRecord)
-    expect(store.abdominalRecords).toHaveLength(4)
+  it('should delete record from Firestore', async () => {
+    const store = useTrainingStore()
+    const recordId = 'test-record-id'
+
+    await store.deleteRecord(recordId)
+
+    expect(vi.mocked(doc)).toHaveBeenCalledWith(
+      'firestore-instance',
+      `users/test-user-id/trainingRecords/${recordId}`,
+    )
+    expect(vi.mocked(deleteDoc)).toHaveBeenCalledWith('doc-ref')
+  })
+
+  it('should update records when snapshot changes', () => {
+    const store = useTrainingStore()
+    const mockSnapshot = {
+      docs: [
+        {
+          id: '1',
+          data: () => ({
+            type: 'running',
+            date: { toDate: () => new Date('2024-03-15') },
+            level: 5,
+            time: 30,
+            speed: 8.5,
+            userId: 'test-user-id',
+          }),
+        },
+        {
+          id: '2',
+          data: () => ({
+            type: 'legPress',
+            date: { toDate: () => new Date('2024-03-15') },
+            weight: 80,
+            reps: 12,
+            sets: 3,
+            userId: 'test-user-id',
+          }),
+        },
+      ],
+    } as unknown as QuerySnapshot<DocumentSnapshot>
+
+    // onSnapshotのコールバックを実行
+    const [, callback] = vi.mocked(onSnapshot).mock.calls[0]
+    ;(callback as (snapshot: QuerySnapshot<DocumentSnapshot>) => void)(mockSnapshot)
+
+    expect(store.runningRecords).toHaveLength(1)
+    expect(store.legPressRecords).toHaveLength(1)
+    expect(store.runningRecords[0]).toMatchObject({
+      id: '1',
+      type: 'running',
+      level: 5,
+      time: 30,
+      speed: 8.5,
+    })
+    expect(store.legPressRecords[0]).toMatchObject({
+      id: '2',
+      type: 'legPress',
+      weight: 80,
+      reps: 12,
+      sets: 3,
+    })
   })
 })

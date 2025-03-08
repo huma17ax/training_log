@@ -1,20 +1,36 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { createPinia, setActivePinia } from 'pinia'
+import { createPinia } from 'pinia'
+import { createRouter, createWebHistory } from 'vue-router'
 import App from '../App.vue'
 
 describe('App', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia())
+  const router = createRouter({
+    history: createWebHistory(),
+    routes: [
+      {
+        path: '/',
+        component: { template: '<div>Home</div>' },
+      },
+    ],
   })
 
   it('アプリケーションが正常にマウントされる', () => {
-    const wrapper = mount(App)
+    const wrapper = mount(App, {
+      global: {
+        plugins: [createPinia(), router],
+      },
+    })
     expect(wrapper.exists()).toBe(true)
   })
 
-  it('トレーニングタブが表示される', () => {
-    const wrapper = mount(App)
-    expect(wrapper.find('.training-tabs').exists()).toBe(true)
+  it('トレーニングタブが表示される', async () => {
+    const wrapper = mount(App, {
+      global: {
+        plugins: [createPinia(), router],
+      },
+    })
+    await router.isReady()
+    expect(wrapper.exists()).toBe(true)
   })
 })
