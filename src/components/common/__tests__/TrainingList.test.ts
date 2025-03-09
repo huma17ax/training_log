@@ -45,7 +45,7 @@ describe('TrainingList', () => {
     const wrapper = mount(TrainingList, {
       props: {
         records: [],
-        type: 'weight',
+        type: 'legPress',
       },
     })
 
