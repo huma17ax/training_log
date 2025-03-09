@@ -5,6 +5,7 @@ import TrainingList from '../common/TrainingList.vue'
 import TrainingForm from '../common/TrainingForm.vue'
 import TrainingStats from '../common/TrainingStats.vue'
 import TrainingChart from '../common/TrainingChart.vue'
+import NextGoalSelector from '../common/NextGoalSelector.vue'
 import type { RunningRecord } from '@/stores/trainingStore'
 
 const store = useTrainingStore()
@@ -52,6 +53,8 @@ const addRecord = (data: Record<string, number | string>) => {
     <TrainingStats :records="store.runningRecords" type="running" />
 
     <TrainingChart :chart-data="chartData" />
+
+    <NextGoalSelector type="running" />
 
     <TrainingForm type="running" @submit="addRecord" />
 

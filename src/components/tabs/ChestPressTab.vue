@@ -5,6 +5,7 @@ import TrainingList from '../common/TrainingList.vue'
 import TrainingForm from '../common/TrainingForm.vue'
 import TrainingStats from '../common/TrainingStats.vue'
 import TrainingChart from '../common/TrainingChart.vue'
+import NextGoalSelector from '../common/NextGoalSelector.vue'
 import type { WeightTrainingRecord } from '@/stores/trainingStore'
 
 const store = useTrainingStore()
@@ -43,13 +44,15 @@ const addRecord = (data: Record<string, number | string>) => {
   <div class="chest-press-tab">
     <h2>チェストプレス</h2>
 
-    <TrainingStats :records="store.chestPressRecords" type="weight" />
+    <TrainingStats :records="store.chestPressRecords" type="chestPress" />
 
     <TrainingChart :chart-data="chartData" />
 
+    <NextGoalSelector type="chestPress" />
+
     <TrainingForm type="chestPress" @submit="addRecord" />
 
-    <TrainingList :records="store.chestPressRecords" type="weight" />
+    <TrainingList :records="store.chestPressRecords" type="chestPress" />
   </div>
 </template>
 

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { RunningRecord, WeightTrainingRecord } from '@/stores/trainingStore'
+import type { RunningRecord, WeightTrainingRecord, TrainingType } from '@/stores/trainingStore'
 
 const props = defineProps<{
   records: RunningRecord[] | WeightTrainingRecord[]
-  type: 'running' | 'weight'
+  type: TrainingType
 }>()
 
 // 記録の数

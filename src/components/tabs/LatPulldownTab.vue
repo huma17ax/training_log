@@ -5,6 +5,7 @@ import TrainingList from '../common/TrainingList.vue'
 import TrainingForm from '../common/TrainingForm.vue'
 import TrainingStats from '../common/TrainingStats.vue'
 import TrainingChart from '../common/TrainingChart.vue'
+import NextGoalSelector from '../common/NextGoalSelector.vue'
 import type { WeightTrainingRecord } from '@/stores/trainingStore'
 
 const store = useTrainingStore()
@@ -43,13 +44,15 @@ const addRecord = (data: Record<string, number | string>) => {
   <div class="lat-pulldown-tab">
     <h2>ラットプルダウン</h2>
 
-    <TrainingStats :records="store.latPulldownRecords" type="weight" />
+    <TrainingStats :records="store.latPulldownRecords" type="latPulldown" />
 
     <TrainingChart :chart-data="chartData" />
 
+    <NextGoalSelector type="latPulldown" />
+
     <TrainingForm type="latPulldown" @submit="addRecord" />
 
-    <TrainingList :records="store.latPulldownRecords" type="weight" />
+    <TrainingList :records="store.latPulldownRecords" type="latPulldown" />
   </div>
 </template>
 
