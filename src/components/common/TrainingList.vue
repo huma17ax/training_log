@@ -29,7 +29,7 @@ defineProps<{
         </thead>
         <tbody>
           <template v-if="type === 'running'">
-            <tr v-for="record in records" :key="record.id">
+            <tr v-for="record in [...records].reverse()" :key="record.id">
               <td>{{ record.date }}</td>
               <td>{{ (record as RunningRecord).level }}</td>
               <td>{{ (record as RunningRecord).time }}</td>
@@ -37,7 +37,7 @@ defineProps<{
             </tr>
           </template>
           <template v-else>
-            <tr v-for="record in records" :key="record.id">
+            <tr v-for="record in [...records].reverse()" :key="record.id">
               <td>{{ record.date }}</td>
               <td>{{ (record as WeightTrainingRecord).weight }}</td>
               <td>{{ (record as WeightTrainingRecord).reps }}</td>
