@@ -27,11 +27,13 @@ const setActiveTab = (tab: TrainingType) => {
 }
 
 const handleLogout = async () => {
-  try {
-    await authStore.logout()
-    router.push('/login')
-  } catch {
-    // エラーはストアで処理されているため、ここでは何もしない
+  if (window.confirm('ログアウトしてもよろしいですか？')) {
+    try {
+      await authStore.logout()
+      router.push('/login')
+    } catch {
+      // エラーはストアで処理されているため、ここでは何もしない
+    }
   }
 }
 </script>
