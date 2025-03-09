@@ -1,5 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import {
+  collection,
+  addDoc,
+  doc,
+  deleteDoc,
+  onSnapshot,
+  Timestamp,
+  getFirestore,
+} from 'firebase/firestore'
+import { getAuth } from 'firebase/auth'
 
 export type TrainingType = 'running' | 'legPress' | 'chestPress' | 'latPulldown' | 'abdominal'
 
@@ -9,6 +19,8 @@ export interface RunningRecord {
   level: number
   time: number // 分単位
   speed: number // km/h
+  type: 'running'
+  userId: string
 }
 
 export interface WeightTrainingRecord {
@@ -17,70 +29,107 @@ export interface WeightTrainingRecord {
   weight: number // kg
   reps: number
   sets: number
+  type: Exclude<TrainingType, 'running'>
+  userId: string
 }
 
 export type TrainingRecord = RunningRecord | WeightTrainingRecord
 
 export const useTrainingStore = defineStore('training', () => {
-  const runningRecords = ref<RunningRecord[]>([
-    { id: '1', date: '2023-03-01', level: 5, time: 30, speed: 8.5 },
-    { id: '2', date: '2023-03-03', level: 6, time: 35, speed: 9.0 },
-    { id: '3', date: '2023-03-05', level: 5, time: 40, speed: 8.0 },
-  ])
+  const db = getFirestore()
+  const auth = getAuth()
 
-  const legPressRecords = ref<WeightTrainingRecord[]>([
-    { id: '1', date: '2023-03-01', weight: 80, reps: 12, sets: 3 },
-    { id: '2', date: '2023-03-04', weight: 85, reps: 10, sets: 3 },
-    { id: '3', date: '2023-03-07', weight: 90, reps: 8, sets: 4 },
-  ])
+  const runningRecords = ref<RunningRecord[]>([])
+  const legPressRecords = ref<WeightTrainingRecord[]>([])
+  const chestPressRecords = ref<WeightTrainingRecord[]>([])
+  const latPulldownRecords = ref<WeightTrainingRecord[]>([])
+  const abdominalRecords = ref<WeightTrainingRecord[]>([])
 
-  const chestPressRecords = ref<WeightTrainingRecord[]>([
-    { id: '1', date: '2023-03-02', weight: 60, reps: 10, sets: 3 },
-    { id: '2', date: '2023-03-05', weight: 65, reps: 8, sets: 3 },
-    { id: '3', date: '2023-03-08', weight: 70, reps: 6, sets: 4 },
-  ])
+  // Firestoreからデータを取得
+  function fetchTrainingRecords() {
+    if (!auth.currentUser) return
 
-  const latPulldownRecords = ref<WeightTrainingRecord[]>([
-    { id: '1', date: '2023-03-02', weight: 50, reps: 12, sets: 3 },
-    { id: '2', date: '2023-03-05', weight: 55, reps: 10, sets: 3 },
-    { id: '3', date: '2023-03-08', weight: 60, reps: 8, sets: 4 },
-  ])
+    const trainingRef = collection(db, `users/${auth.currentUser.uid}/trainingRecords`)
 
-  const abdominalRecords = ref<WeightTrainingRecord[]>([
-    { id: '1', date: '2023-03-03', weight: 40, reps: 15, sets: 3 },
-    { id: '2', date: '2023-03-06', weight: 45, reps: 12, sets: 3 },
-    { id: '3', date: '2023-03-09', weight: 50, reps: 10, sets: 4 },
-  ])
+    // リアルタイムリスナーを設定
+    return onSnapshot(trainingRef, (snapshot) => {
+      const records = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        date: doc.data().date.toDate().toISOString().split('T')[0],
+      })) as TrainingRecord[]
+
+      // 種類ごとにレコードを振り分け
+      runningRecords.value = records.filter((r) => r.type === 'running') as RunningRecord[]
+      legPressRecords.value = records.filter((r) => r.type === 'legPress') as WeightTrainingRecord[]
+      chestPressRecords.value = records.filter(
+        (r) => r.type === 'chestPress',
+      ) as WeightTrainingRecord[]
+      latPulldownRecords.value = records.filter(
+        (r) => r.type === 'latPulldown',
+      ) as WeightTrainingRecord[]
+      abdominalRecords.value = records.filter(
+        (r) => r.type === 'abdominal',
+      ) as WeightTrainingRecord[]
+    })
+  }
 
   // 新しいランニング記録を追加
-  function addRunningRecord(record: Omit<RunningRecord, 'id'>) {
-    const id = Date.now().toString()
-    runningRecords.value.push({ ...record, id })
+  async function addRunningRecord(record: Omit<RunningRecord, 'id' | 'type' | 'userId'>) {
+    if (!auth.currentUser) return
+
+    const trainingRef = collection(db, `users/${auth.currentUser.uid}/trainingRecords`)
+    await addDoc(trainingRef, {
+      ...record,
+      type: 'running',
+      userId: auth.currentUser.uid,
+      date: Timestamp.fromDate(new Date(record.date)),
+    })
   }
 
   // 新しいウェイトトレーニング記録を追加
-  function addWeightTrainingRecord(
+  async function addWeightTrainingRecord(
     type: Exclude<TrainingType, 'running'>,
-    record: Omit<WeightTrainingRecord, 'id'>,
+    record: Omit<WeightTrainingRecord, 'id' | 'type' | 'userId'>,
   ) {
-    const id = Date.now().toString()
-    const newRecord = { ...record, id }
+    if (!auth.currentUser) return
 
-    switch (type) {
-      case 'legPress':
-        legPressRecords.value.push(newRecord)
-        break
-      case 'chestPress':
-        chestPressRecords.value.push(newRecord)
-        break
-      case 'latPulldown':
-        latPulldownRecords.value.push(newRecord)
-        break
-      case 'abdominal':
-        abdominalRecords.value.push(newRecord)
-        break
-    }
+    const trainingRef = collection(db, `users/${auth.currentUser.uid}/trainingRecords`)
+    await addDoc(trainingRef, {
+      ...record,
+      type,
+      userId: auth.currentUser.uid,
+      date: Timestamp.fromDate(new Date(record.date)),
+    })
   }
+
+  // レコードを削除
+  async function deleteRecord(recordId: string) {
+    if (!auth.currentUser) return
+
+    const recordRef = doc(db, `users/${auth.currentUser.uid}/trainingRecords/${recordId}`)
+    await deleteDoc(recordRef)
+  }
+
+  // 認証状態の変更を監視
+  let unsubscribe: (() => void) | undefined
+  auth.onAuthStateChanged((user) => {
+    if (unsubscribe) {
+      unsubscribe()
+      unsubscribe = undefined
+    }
+
+    if (user) {
+      unsubscribe = fetchTrainingRecords()
+    } else {
+      // ログアウト時にデータをクリア
+      runningRecords.value = []
+      legPressRecords.value = []
+      chestPressRecords.value = []
+      latPulldownRecords.value = []
+      abdominalRecords.value = []
+    }
+  })
 
   return {
     runningRecords,
@@ -90,5 +139,6 @@ export const useTrainingStore = defineStore('training', () => {
     abdominalRecords,
     addRunningRecord,
     addWeightTrainingRecord,
+    deleteRecord,
   }
 })

@@ -15,6 +15,9 @@
 - 言語: TypeScript
 - テスト: Vitest
 - コード品質: ESLint, Prettier
+- バックエンド: Firebase
+  - データベース: Cloud Firestore
+  - ホスティング: Firebase Hosting
 
 ## 2. システム構成
 
@@ -27,7 +30,8 @@ src/
 ├── stores/ # Piniaストア
 ├── types/ # 型定義
 ├── utils/ # ユーティリティ関数
-└── router/ # ルーティング設定
+├── router/ # ルーティング設定
+└── firebase/ # Firebase関連の設定とユーティリティ
 
 ### 2.2 主要コンポーネント
 
@@ -49,37 +53,69 @@ src/
 
 ## 3. データモデル
 
-### 3.1 トレーニングログ
+### 3.1 Firestoreコレクション構造
 
-- ID: 一意の識別子
-- 日付: トレーニング実施日
-- 種目: トレーニング種目
-- セット情報: 重量、回数、セット番号の配列
-- メモ: オプションのメモ欄
+#### トレーニングログ
 
-### 3.2 種目マスター
+```typescript
+interface TrainingLog {
+  id: string
+  date: Timestamp
+  exerciseId: string
+  sets: {
+    weight?: number
+    reps?: number
+    setNumber: number
+    level?: number
+    duration?: number
+    speed?: number
+  }[]
+  notes?: string
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+```
 
-- ID: 一意の識別子
-- 名前: 種目名
-- カテゴリ: ウェイト/有酸素/自重
-- ターゲット部位: 対象となる筋肉群
+#### 種目マスター
+
+```typescript
+interface Exercise {
+  id: string
+  name: string
+  category: 'weight' | 'cardio' | 'bodyweight'
+  targetMuscles: string[]
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+```
 
 ## 4. 状態管理
 
-### 4.1 トレーニングストア
+### 4.1 Firestoreとの同期
 
-#### 状態
+#### トレーニングストア
 
-- トレーニングログ一覧
-- 種目マスター一覧
-- 選択中の日付
+```typescript
+interface TrainingState {
+  logs: TrainingLog[];
+  exercises: Exercise[];
+  selectedDate: Date;
+  syncStatus: 'synced' | 'syncing' | 'error' | 'offline';
+}
 
-#### 主要な操作
+const actions = {
+  // Firestoreとの同期
+  async initializeFirestore(): Promise<void>;
+  async syncTrainingLogs(): Promise<void>;
+  async addTrainingLog(log: TrainingLog): Promise<void>;
+  async updateTrainingLog(log: TrainingLog): Promise<void>;
+  async deleteTrainingLog(id: string): Promise<void>;
 
-- トレーニングログの追加
-- トレーニングログの更新
-- トレーニングログの削除
-- トレーニングログの取得
+  // オフラインサポート
+  async enableOfflineSupport(): Promise<void>;
+  async handleOfflineChanges(): Promise<void>;
+}
+```
 
 ## 5. 主要機能詳細
 
@@ -108,6 +144,24 @@ src/
 2. 月間トレーニング頻度
 3. 部位別トレーニング比率
 
+### 5.4 Firestore同期機能
+
+1. リアルタイム同期
+
+   - onSnapshotを使用したリアルタイムアップデート
+   - オフライン時のキャッシュ利用
+   - 同期状態の表示
+
+2. バッチ処理
+
+   - 複数のセット情報の一括保存
+   - トランザクションの利用
+
+3. エラーハンドリング
+   - 接続エラーの検出と再試行
+   - オフライン状態の検出と表示
+   - 同期エラーの通知
+
 ## 6. テスト計画
 
 ### 6.1 単体テスト
@@ -121,6 +175,13 @@ src/
 - フォーム入力からデータ保存までのフロー
 - フィルタリング機能の動作確認
 - グラフ描画の正確性
+
+### 6.3 Firebaseテスト
+
+- Firestoreのモック化
+- オフライン動作のテスト
+- 同期処理のテスト
+- セキュリティルールのテスト
 
 ## 7. 非機能要件
 
@@ -222,3 +283,205 @@ src/
 3. カラーコントラスト
    - WCAG 2.1のAAレベルに準拠
    - ダークモード対応の考慮
+
+### 7.6 Firebaseパフォーマンス
+
+1. Firestoreの最適化
+
+   - インデックスの適切な設定
+   - クエリの最適化
+   - データ構造の最適化
+
+2. オフラインサポート
+
+   - キャッシュサイズの管理
+   - 同期戦略の最適化
+
+3. セキュリティ
+   - セキュリティルールの最適化
+   - レート制限の設定
+
+### 7.7 デプロイメント
+
+1. Firebase Hosting
+
+   - キャッシュ設定
+   - カスタムドメインの設定
+   - SSL証明書の管理
+
+2. CI/CD
+   - GitHub Actionsとの連携
+   - 自動デプロイの設定
+   - 環境変数の管理
+
+## コンポーネント詳細
+
+### ビューコンポーネント
+
+- `LoginView.vue`
+
+  - Google認証によるログイン機能
+  - エラーメッセージの表示
+  - ローディング状態の表示
+
+- `HomeView.vue`
+  - タブナビゲーション
+  - ログアウト機能（アイコンボタン）
+  - 各トレーニングタブの表示管理
+  - トレーニング種目の切り替え
+  - レスポンシブ対応のタブレイアウト
+
+### 機能コンポーネント
+
+- 各タブコンポーネント:
+  - `RunningTab.vue`: ランニングのタブ
+    - 距離、時間、ペースの記録
+  - `LegPressTab.vue`: レッグプレスのタブ
+    - 重量、セット数、回数の記録
+  - `ChestPressTab.vue`: チェストプレスのタブ
+    - 重量、セット数、回数の記録
+  - `LatPulldownTab.vue`: ラットプルダウンのタブ
+    - 重量、セット数、回数の記録
+  - `AbdominalTab.vue`: アブドミナルのタブ
+    - セット数、回数の記録
+
+### 共通コンポーネント
+
+- `TrainingList.vue`: トレーニング記録のリスト表示
+  - 日付順の表示
+  - ページネーション機能
+  - フィルタリング機能
+- `TrainingForm.vue`: 新しいトレーニング記録を入力するフォーム
+  - バリデーション機能
+  - 入力補助機能
+- `TrainingStats.vue`: トレーニングの統計情報を表示
+  - 期間別の集計
+  - 目標達成率の表示
+- `TrainingChart.vue`: トレーニング記録のチャートを表示
+  - 種目別の進捗グラフ
+  - トレンド分析
+
+## データ構造
+
+### Firestore コレクション
+
+```
+users/
+  {userId}/
+    trainingLogs/
+      {logId}/
+        type: string
+        date: timestamp
+        data: {
+          // 種目ごとの詳細データ
+        }
+    settings/
+      {settingId}/
+        // ユーザー設定データ
+```
+
+### ストア設計
+
+- `authStore`
+
+  - ユーザー状態の管理
+  - 認証処理
+  - エラー処理
+  - ローディング状態
+
+- `trainingStore`
+  - トレーニングデータの管理
+  - フィルタリング
+  - ソート
+  - ページネーション
+  - キャッシュ
+
+## UI/UX詳細
+
+### レイアウト
+
+- ヘッダー
+
+  - 高さ: 64px
+  - 固定位置
+  - ログアウトボタン配置
+
+- タブバー
+
+  - 高さ: 48px
+  - スクロール可能
+  - アクティブ表示
+
+- メインコンテンツ
+  - 最大幅: 1200px
+  - パディング: 16px
+  - レスポンシブグリッド
+
+### デザインシステム
+
+- カラー
+
+  - Primary: #4caf50
+  - Secondary: #2196f3
+  - Accent: #dc3545
+  - Background: #f5f5f5
+  - Text: #333333
+
+- タイポグラフィ
+
+  - フォントファミリー: Helvetica Neue, Arial
+  - 基本サイズ: 16px
+  - 行の高さ: 1.6
+
+- スペーシング
+  - 基本単位: 8px
+  - パディング: 16px
+  - マージン: 16px
+
+## セキュリティ実装
+
+### Firestore セキュリティルール
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+### 入力バリデーション
+
+- 必須項目チェック
+- 数値範囲チェック
+- 日付形式チェック
+- XSS対策
+
+## エラーハンドリング
+
+- ネットワークエラー
+- 認証エラー
+- バリデーションエラー
+- データ整合性エラー
+
+## テスト仕様
+
+- ユニットテスト
+
+  - コンポーネントテスト
+  - ストアテスト
+  - ユーティリティテスト
+
+- 統合テスト
+
+  - 認証フロー
+  - データフロー
+  - ルーティング
+
+- E2Eテスト
+  - ログインフロー
+  - データ入力フロー
+  - エラーハンドリング
