@@ -112,16 +112,20 @@ main {
   overflow: hidden;
   border-radius: 0;
   box-shadow: none;
+  padding-top: var(--header-height, 60px);
 }
 
 .tabs-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
   background-color: var(--primary-color);
   color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 0;
+  height: var(--header-height, 60px);
 }
 
 .header-content {
@@ -252,6 +256,9 @@ main {
 .tab-content {
   padding: 0.75rem;
   flex: 1;
+  overflow-y: auto;
+  height: calc(100vh - var(--header-height, 60px));
+  width: 100%;
 }
 
 @media (max-width: 375px) {
