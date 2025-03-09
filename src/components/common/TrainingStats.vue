@@ -10,15 +10,6 @@ const props = defineProps<{
 // 記録の数
 const recordCount = computed(() => props.records.length)
 
-// 最新の記録
-const latestRecord = computed(() => {
-  if (props.records.length === 0) return null
-
-  return [...props.records].sort((a, b) => {
-    return new Date(b.date).getTime() - new Date(a.date).getTime()
-  })[0]
-})
-
 // 最高記録
 const bestRecord = computed(() => {
   if (props.records.length === 0) return null
@@ -101,20 +92,6 @@ const durationDays = computed(() => {
         <div class="stat-label">最高記録</div>
       </div>
     </div>
-
-    <div class="latest-record" v-if="latestRecord">
-      <h4>最新の記録 ({{ latestRecord.date }})</h4>
-      <div v-if="type === 'running'">
-        <p>レベル: {{ (latestRecord as RunningRecord).level }}</p>
-        <p>時間: {{ (latestRecord as RunningRecord).time }} 分</p>
-        <p>速度: {{ (latestRecord as RunningRecord).speed }} km/h</p>
-      </div>
-      <div v-else>
-        <p>重量: {{ (latestRecord as WeightTrainingRecord).weight }} kg</p>
-        <p>回数: {{ (latestRecord as WeightTrainingRecord).reps }}</p>
-        <p>セット数: {{ (latestRecord as WeightTrainingRecord).sets }}</p>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -165,26 +142,6 @@ h3 {
   line-height: 1.2;
 }
 
-.latest-record {
-  background-color: #f8f8f8;
-  padding: 1rem;
-  border-radius: 4px;
-}
-
-h4 {
-  margin-bottom: 0.5rem;
-  color: var(--text-color);
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-p {
-  margin: 0.25rem 0;
-  color: #555;
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
 @media (min-width: 768px) {
   .stats-grid {
     grid-template-columns: repeat(4, 1fr);
@@ -197,51 +154,6 @@ p {
 
   .stat-label {
     font-size: 0.9rem;
-  }
-}
-
-@media (max-width: 375px) {
-  .training-stats {
-    padding: 0.75rem;
-    margin-bottom: 0.75rem;
-  }
-
-  h3 {
-    font-size: 0.95rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .stats-grid {
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .stat-item {
-    padding: 0.75rem 0.5rem;
-    min-height: 44px;
-  }
-
-  .stat-value {
-    font-size: 1.1rem;
-    margin-bottom: 0.2rem;
-  }
-
-  .stat-label {
-    font-size: 0.75rem;
-  }
-
-  .latest-record {
-    padding: 0.75rem;
-  }
-
-  h4 {
-    font-size: 0.85rem;
-    margin-bottom: 0.4rem;
-  }
-
-  p {
-    font-size: 0.8rem;
-    margin: 0.2rem 0;
   }
 }
 </style>

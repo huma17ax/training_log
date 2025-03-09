@@ -46,9 +46,9 @@ const addRecord = (data: Record<string, number | string>) => {
 
     <TrainingStats :records="store.abdominalRecords" type="abdominal" />
 
-    <TrainingChart :chart-data="chartData" />
-
     <NextGoalSelector type="abdominal" />
+
+    <TrainingChart :chart-data="chartData" />
 
     <TrainingForm type="abdominal" @submit="addRecord" />
 

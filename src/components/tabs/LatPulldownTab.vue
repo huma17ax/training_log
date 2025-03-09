@@ -46,9 +46,9 @@ const addRecord = (data: Record<string, number | string>) => {
 
     <TrainingStats :records="store.latPulldownRecords" type="latPulldown" />
 
-    <TrainingChart :chart-data="chartData" />
-
     <NextGoalSelector type="latPulldown" />
+
+    <TrainingChart :chart-data="chartData" />
 
     <TrainingForm type="latPulldown" @submit="addRecord" />
 
