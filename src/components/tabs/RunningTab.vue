@@ -52,9 +52,9 @@ const addRecord = (data: Record<string, number | string>) => {
 
     <TrainingStats :records="store.runningRecords" type="running" />
 
-    <TrainingChart :chart-data="chartData" />
-
     <NextGoalSelector type="running" />
+
+    <TrainingChart :chart-data="chartData" />
 
     <TrainingForm type="running" @submit="addRecord" />
 
