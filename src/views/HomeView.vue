@@ -99,19 +99,19 @@ const handleLogout = async () => {
 main {
   flex: 1;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
+  max-width: 100%;
+  margin: 0;
 }
 
 .training-tabs {
   display: flex;
   flex-direction: column;
   width: 100%;
+  height: 100%;
   background-color: white;
   overflow: hidden;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .tabs-header {
@@ -121,7 +121,7 @@ main {
   background-color: var(--primary-color);
   color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border-radius: 8px 8px 0 0;
+  border-radius: 0;
 }
 
 .header-content {
@@ -256,7 +256,7 @@ main {
 
 @media (max-width: 375px) {
   main {
-    padding: 1rem 0.5rem;
+    padding: 0;
   }
 
   .header-content {
