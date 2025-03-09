@@ -1,13 +1,29 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useNextGoalStore } from '@/stores/nextGoalStore'
+import { useAuthStore } from '@/stores/auth'
+import type { TrainingType } from '@/stores/nextGoalStore'
+
+const props = defineProps<{
+  type: TrainingType
+}>()
+
+const nextGoalStore = useNextGoalStore()
+const authStore = useAuthStore()
 
 const selectedGoal = ref<'increase' | 'maintain' | 'decrease' | null>(null)
 
 const selectGoal = async (goal: 'increase' | 'maintain' | 'decrease') => {
+  if (!authStore.user) return
   selectedGoal.value = goal
+  await nextGoalStore.updateNextGoal(authStore.user.uid, props.type, goal)
 }
 
-onMounted(async () => {})
+onMounted(async () => {
+  if (!authStore.user) return
+  await nextGoalStore.fetchNextGoal(authStore.user.uid, props.type)
+  selectedGoal.value = nextGoalStore.nextGoals[props.type]
+})
 </script>
 
 <template>
