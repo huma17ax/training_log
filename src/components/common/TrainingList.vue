@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { RunningRecord, WeightTrainingRecord } from '@/stores/trainingStore'
+import type { RunningRecord, WeightTrainingRecord, TrainingType } from '@/stores/trainingStore'
 
 defineProps<{
   records: RunningRecord[] | WeightTrainingRecord[]
-  type: 'running' | 'weight'
+  type: TrainingType
 }>()
 </script>
 
