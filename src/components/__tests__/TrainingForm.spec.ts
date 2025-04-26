@@ -1,12 +1,44 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { setActivePinia, createPinia } from 'pinia'
+import type { Pinia } from 'pinia'
 import TrainingForm from '../common/TrainingForm.vue'
 
+// Firebaseのモック
+vi.mock('firebase/firestore', () => ({
+  collection: vi.fn(),
+  addDoc: vi.fn(),
+  doc: vi.fn(),
+  deleteDoc: vi.fn(),
+  onSnapshot: vi.fn(),
+  Timestamp: {
+    fromDate: vi.fn((date) => ({ toDate: () => new Date(date) })),
+  },
+  getFirestore: vi.fn(() => 'firestore-instance'),
+}))
+
+vi.mock('firebase/auth', () => ({
+  getAuth: vi.fn(() => ({
+    currentUser: { uid: 'test-user-id' },
+    onAuthStateChanged: vi.fn(),
+  })),
+}))
+
 describe('TrainingForm', () => {
+  let pinia: Pinia
+
+  beforeEach(() => {
+    pinia = createPinia()
+    setActivePinia(pinia)
+  })
+
   it('デフォルトでフォームが非表示であること', () => {
     const wrapper = mount(TrainingForm, {
       props: {
         type: 'running',
+      },
+      global: {
+        plugins: [pinia],
       },
     })
 
@@ -18,6 +50,9 @@ describe('TrainingForm', () => {
     const wrapper = mount(TrainingForm, {
       props: {
         type: 'running',
+      },
+      global: {
+        plugins: [pinia],
       },
     })
 
@@ -39,6 +74,9 @@ describe('TrainingForm', () => {
     const wrapper = mount(TrainingForm, {
       props: {
         type: 'running',
+      },
+      global: {
+        plugins: [pinia],
       },
     })
 
