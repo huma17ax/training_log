@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import type { RunningRecord, WeightTrainingRecord, TrainingType } from '@/stores/trainingStore'
+import { computed } from 'vue'
 
-defineProps<{
+const props = defineProps<{
   records: RunningRecord[] | WeightTrainingRecord[]
   type: TrainingType
 }>()
+
+// 日付でソートされたレコードを取得
+const sortedRecords = computed(() => {
+  return [...props.records].sort((a, b) => {
+    return new Date(b.date).getTime() - new Date(a.date).getTime()
+  })
+})
 </script>
 
 <template>
@@ -29,7 +37,7 @@ defineProps<{
         </thead>
         <tbody>
           <template v-if="type === 'running'">
-            <tr v-for="record in [...records].reverse()" :key="record.id">
+            <tr v-for="record in sortedRecords" :key="record.id">
               <td>{{ record.date }}</td>
               <td>{{ (record as RunningRecord).level }}</td>
               <td>{{ (record as RunningRecord).time }}</td>
@@ -37,7 +45,7 @@ defineProps<{
             </tr>
           </template>
           <template v-else>
-            <tr v-for="record in [...records].reverse()" :key="record.id">
+            <tr v-for="record in sortedRecords" :key="record.id">
               <td>{{ record.date }}</td>
               <td>{{ (record as WeightTrainingRecord).weight }}</td>
               <td>{{ (record as WeightTrainingRecord).reps }}</td>
