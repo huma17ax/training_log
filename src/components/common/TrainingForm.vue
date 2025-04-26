@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { TrainingType } from '@/stores/trainingStore'
+import { ref, computed } from 'vue'
+import { useTrainingStore } from '@/stores/trainingStore'
+import type { TrainingType, RunningRecord, WeightTrainingRecord } from '@/stores/trainingStore'
 
 const props = defineProps<{
   type: TrainingType
@@ -10,16 +11,56 @@ const emit = defineEmits<{
   (e: 'submit', data: Record<string, number | string>): void
 }>()
 
+const store = useTrainingStore()
+
+// 最新の記録を取得
+const latestRecord = computed(() => {
+  const records =
+    props.type === 'running'
+      ? store.runningRecords
+      : props.type === 'legPress'
+        ? store.legPressRecords
+        : props.type === 'chestPress'
+          ? store.chestPressRecords
+          : props.type === 'latPulldown'
+            ? store.latPulldownRecords
+            : store.abdominalRecords
+
+  if (records.length === 0) return null
+
+  return [...records].sort((a, b) => {
+    return new Date(b.date).getTime() - new Date(a.date).getTime()
+  })[0]
+})
+
 const isFormVisible = ref(false)
 const today = new Date().toISOString().split('T')[0]
 const formData = ref({
   date: today,
-  level: 5,
-  time: 30,
-  speed: 8.0,
-  weight: 50,
-  reps: 10,
-  sets: 3,
+  level:
+    latestRecord.value && latestRecord.value?.type === 'running'
+      ? (latestRecord.value as RunningRecord).level
+      : 5,
+  time:
+    latestRecord.value && latestRecord.value?.type === 'running'
+      ? (latestRecord.value as RunningRecord).time
+      : 30,
+  speed:
+    latestRecord.value && latestRecord.value?.type === 'running'
+      ? (latestRecord.value as RunningRecord).speed
+      : 8.0,
+  weight:
+    latestRecord.value && latestRecord.value?.type !== 'running'
+      ? (latestRecord.value as WeightTrainingRecord).weight
+      : 50,
+  reps:
+    latestRecord.value && latestRecord.value?.type !== 'running'
+      ? (latestRecord.value as WeightTrainingRecord).reps
+      : 10,
+  sets:
+    latestRecord.value && latestRecord.value?.type !== 'running'
+      ? (latestRecord.value as WeightTrainingRecord).sets
+      : 3,
 })
 
 const submitForm = () => {
@@ -42,12 +83,30 @@ const submitForm = () => {
   // フォームをリセット
   formData.value = {
     ...formData.value,
-    level: 5,
-    time: 30,
-    speed: 8.0,
-    weight: 50,
-    reps: 10,
-    sets: 3,
+    level:
+      latestRecord.value && latestRecord.value?.type === 'running'
+        ? (latestRecord.value as RunningRecord).level
+        : 5,
+    time:
+      latestRecord.value && latestRecord.value?.type === 'running'
+        ? (latestRecord.value as RunningRecord).time
+        : 30,
+    speed:
+      latestRecord.value && latestRecord.value?.type === 'running'
+        ? (latestRecord.value as RunningRecord).speed
+        : 8.0,
+    weight:
+      latestRecord.value && latestRecord.value?.type !== 'running'
+        ? (latestRecord.value as WeightTrainingRecord).weight
+        : 50,
+    reps:
+      latestRecord.value && latestRecord.value?.type !== 'running'
+        ? (latestRecord.value as WeightTrainingRecord).reps
+        : 10,
+    sets:
+      latestRecord.value && latestRecord.value?.type !== 'running'
+        ? (latestRecord.value as WeightTrainingRecord).sets
+        : 3,
   }
 
   // フォームを非表示にする
