@@ -4,7 +4,8 @@ import {
   onAuthStateChanged,
   type User,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
 } from 'firebase/auth'
 import { app } from './index'
 
@@ -25,8 +26,12 @@ export const getCurrentUser = (): Promise<User | null> => {
 }
 
 export const loginWithGoogle = async (): Promise<User> => {
-  const { user } = await signInWithPopup(auth, provider)
-  return user
+  await signInWithRedirect(auth, provider)
+  const result = await getRedirectResult(auth)
+  if (!result) {
+    throw new Error('認証に失敗しました')
+  }
+  return result.user
 }
 
 export const logout = async (): Promise<void> => {
