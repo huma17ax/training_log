@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useTrainingStore } from '@/stores/trainingStore'
 import type { TrainingType, RunningRecord, WeightTrainingRecord } from '@/stores/trainingStore'
 
@@ -37,31 +37,34 @@ const isFormVisible = ref(false)
 const today = new Date().toISOString().split('T')[0]
 const formData = ref({
   date: today,
-  level:
-    latestRecord.value && latestRecord.value?.type === 'running'
-      ? (latestRecord.value as RunningRecord).level
-      : 5,
-  time:
-    latestRecord.value && latestRecord.value?.type === 'running'
-      ? (latestRecord.value as RunningRecord).time
-      : 30,
-  speed:
-    latestRecord.value && latestRecord.value?.type === 'running'
-      ? (latestRecord.value as RunningRecord).speed
-      : 8.0,
-  weight:
-    latestRecord.value && latestRecord.value?.type !== 'running'
-      ? (latestRecord.value as WeightTrainingRecord).weight
-      : 50,
-  reps:
-    latestRecord.value && latestRecord.value?.type !== 'running'
-      ? (latestRecord.value as WeightTrainingRecord).reps
-      : 10,
-  sets:
-    latestRecord.value && latestRecord.value?.type !== 'running'
-      ? (latestRecord.value as WeightTrainingRecord).sets
-      : 3,
+  level: 5,
+  time: 30,
+  speed: 8.0,
+  weight: 50,
+  reps: 10,
+  sets: 3,
 })
+
+// latestRecordの変更を監視してformDataを更新
+watch(latestRecord, (newRecord) => {
+  if (newRecord) {
+    if (newRecord.type === 'running') {
+      formData.value = {
+        ...formData.value,
+        level: (newRecord as RunningRecord).level,
+        time: (newRecord as RunningRecord).time,
+        speed: (newRecord as RunningRecord).speed,
+      }
+    } else {
+      formData.value = {
+        ...formData.value,
+        weight: (newRecord as WeightTrainingRecord).weight,
+        reps: (newRecord as WeightTrainingRecord).reps,
+        sets: (newRecord as WeightTrainingRecord).sets,
+      }
+    }
+  }
+}, { immediate: true })
 
 const submitForm = () => {
   if (props.type === 'running') {
@@ -83,30 +86,12 @@ const submitForm = () => {
   // フォームをリセット
   formData.value = {
     ...formData.value,
-    level:
-      latestRecord.value && latestRecord.value?.type === 'running'
-        ? (latestRecord.value as RunningRecord).level
-        : 5,
-    time:
-      latestRecord.value && latestRecord.value?.type === 'running'
-        ? (latestRecord.value as RunningRecord).time
-        : 30,
-    speed:
-      latestRecord.value && latestRecord.value?.type === 'running'
-        ? (latestRecord.value as RunningRecord).speed
-        : 8.0,
-    weight:
-      latestRecord.value && latestRecord.value?.type !== 'running'
-        ? (latestRecord.value as WeightTrainingRecord).weight
-        : 50,
-    reps:
-      latestRecord.value && latestRecord.value?.type !== 'running'
-        ? (latestRecord.value as WeightTrainingRecord).reps
-        : 10,
-    sets:
-      latestRecord.value && latestRecord.value?.type !== 'running'
-        ? (latestRecord.value as WeightTrainingRecord).sets
-        : 3,
+    level: 5,
+    time: 30,
+    speed: 8.0,
+    weight: 50,
+    reps: 10,
+    sets: 3,
   }
 
   // フォームを非表示にする
@@ -135,14 +120,7 @@ const toggleForm = () => {
         <template v-if="type === 'running'">
           <div class="form-group">
             <label for="level">レベル</label>
-            <input
-              id="level"
-              v-model.number="formData.level"
-              type="number"
-              min="1"
-              max="20"
-              required
-            />
+            <input id="level" v-model.number="formData.level" type="number" min="1" max="20" required />
           </div>
 
           <div class="form-group">
@@ -152,28 +130,14 @@ const toggleForm = () => {
 
           <div class="form-group">
             <label for="speed">速度 (km/h)</label>
-            <input
-              id="speed"
-              v-model.number="formData.speed"
-              type="number"
-              step="0.1"
-              min="0.1"
-              required
-            />
+            <input id="speed" v-model.number="formData.speed" type="number" step="0.1" min="0.1" required />
           </div>
         </template>
 
         <template v-else>
           <div class="form-group">
             <label for="weight">重量 (kg)</label>
-            <input
-              id="weight"
-              v-model.number="formData.weight"
-              type="number"
-              min="0"
-              step="0.5"
-              required
-            />
+            <input id="weight" v-model.number="formData.weight" type="number" min="0" step="0.5" required />
           </div>
 
           <div class="form-group">
@@ -209,7 +173,8 @@ const toggleForm = () => {
   transition: background-color 0.3s;
   width: 100%;
   margin-bottom: 1rem;
-  min-height: 44px; /* タップターゲットサイズの確保 */
+  min-height: 44px;
+  /* タップターゲットサイズの確保 */
 }
 
 .toggle-button:hover {
@@ -247,12 +212,15 @@ input {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 1rem;
-  min-height: 44px; /* タップターゲットサイズの確保 */
-  -webkit-appearance: none; /* iOSのデフォルトスタイルを削除 */
+  min-height: 44px;
+  /* タップターゲットサイズの確保 */
+  -webkit-appearance: none;
+  /* iOSのデフォルトスタイルを削除 */
 }
 
 input[type='number'] {
-  -moz-appearance: textfield; /* Firefoxのスピンボタンを非表示 */
+  -moz-appearance: textfield;
+  /* Firefoxのスピンボタンを非表示 */
 }
 
 input[type='number']::-webkit-outer-spin-button,
@@ -278,7 +246,8 @@ input:focus {
   transition: background-color 0.3s;
   width: 100%;
   margin-top: 1rem;
-  min-height: 44px; /* タップターゲットサイズの確保 */
+  min-height: 44px;
+  /* タップターゲットサイズの確保 */
 }
 
 .submit-button:hover {
